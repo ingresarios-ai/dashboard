@@ -64,6 +64,43 @@ def main():
                 print(f"[-] Guardado localmente en: {local_path}")
                 if public_url:
                     print(f"[-] Enlace en la nube (hosted): {public_url}")
+
+                # 3. Update index.html dynamically to include the new link
+                index_path = "index.html"
+                if os.path.exists(index_path):
+                    with open(index_path, "r", encoding="utf-8") as f:
+                        index_content = f.read()
+                    
+                    card_href = f"dashboards - métricas/{client}/{file_name}"
+                    card_html = f"""    <!-- CARD: {client}_{product}_{project_date} -->
+    <div class="card">
+      <span class="client-badge">{client}</span>
+      <h3>Embudo: {product.upper()} ({project_date})</h3>
+      <p class="date">Rango: {start_date} - {end_date}</p>
+      <a href="{card_href}" class="btn">Ver Dashboard</a>
+    </div>"""
+                    
+                    if card_href not in index_content:
+                        grid_tag = '<div class="grid">'
+                        if grid_tag in index_content:
+                            index_content = index_content.replace(grid_tag, f"{grid_tag}\n{card_html}")
+                            with open(index_path, "w", encoding="utf-8") as f:
+                                f.write(index_content)
+                            print("[-] Portal index.html actualizado con el nuevo enlace.")
+
+                # 4. Git commit and push automatically to trigger Vercel deploy
+                if os.path.exists(".git"):
+                    print("\n[+] Detectado repositorio Git. Subiendo cambios a GitHub...")
+                    try:
+                        import subprocess
+                        subprocess.run(["git", "add", "."], check=True)
+                        commit_msg = f"feat: auto-sync dashboard {client} {product} {project_date}"
+                        subprocess.run(["git", "commit", "-m", commit_msg], check=True)
+                        subprocess.run(["git", "push", "origin", "main"], check=True)
+                        print("[✔] ¡Cambios subidos a GitHub con éxito! (Despliegue de Vercel iniciado)")
+                    except Exception as git_err:
+                        print(f"[⚠️] No se pudo hacer push automático a git: {git_err}")
+
             else:
                 print("\n[❌] Error devuelto por la función:", res_json.get("error"))
                 
