@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Ingresarios — Launch Ago26</title>
+<style>
+  :root {
+    --purple-light: #7F77DD;
+    --purple-dark: #534AB7;
+    --navy: #0E1024;
+    --navy-card: #171A38;
+    --navy-card-2: #1E2246;
+    --text-main: #F1F1FA;
+    --text-muted: #A6A9C8;
+    --green: #4CD787;
+    --red: #FF6B6B;
+    --amber: #FFC24C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--navy);
+    color: var(--text-main);
+    padding: 24px 32px 60px;
+  }
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 26px;
+    background: linear-gradient(90deg, var(--purple-light), var(--purple-dark));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header .meta { color: var(--text-muted); font-size: 13px; line-height: 1.6; }
+  .badge {
+    display: inline-block;
+    background: var(--purple-dark);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+  .notice {
+    background: rgba(255, 194, 76, 0.1);
+    border: 1px solid rgba(255, 194, 76, 0.4);
+    color: var(--amber);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .tab-btn {
+    background: var(--navy-card);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-muted);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .tab-btn.active {
+    background: linear-gradient(90deg, var(--purple-light), var(--purple-dark));
+    color: #fff;
+    border-color: transparent;
+  }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--navy-card);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .kpi-card .label { color: var(--text-muted); font-size: 12px; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 22px; font-weight: 700; }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+    background: var(--navy-card);
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .filters label { display: flex; flex-direction: column; font-size: 11px; color: var(--text-muted); gap: 4px; }
+  .filters select {
+    background: var(--navy-card-2);
+    color: var(--text-main);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 13px;
+    min-width: 150px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--navy-card);
+    border-radius: 14px;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--navy-card-2);
+    color: var(--text-muted);
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  tbody td {
+    padding: 9px 12px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: rgba(127, 119, 221, 0.08); }
+  .table-wrap { overflow-x: auto; border-radius: 14px; }
+  .country-pill {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(127,119,221,0.18);
+    color: var(--purple-light);
+  }
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    background: var(--navy-card);
+    border-radius: 14px;
+    border: 1px dashed rgba(255,255,255,0.15);
+  }
+  .section-title { font-size: 13px; color: var(--text-muted); margin: 0 0 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Ingresarios — Dashboard de Tráfico Pago</h1>
+    <div class="meta">
+      <span class="badge">Cliente: Ingresarios</span>
+      <span class="badge">Producto: launch</span>
+      <span class="badge">Proyecto: ago26</span><br>
+      Rango solicitado: 2026-06-30 a 2026-07-31 · Moneda: COP (convertida)<br>
+      Generado: <span id="gen-time"></span> · Fuente: Windsor.ai (Meta Ads — Colombia)
+    </div>
+  </div>
+</header>
+
+<div class="notice">
+  El rango solicitado llega hasta 2026-07-31, pero la fecha de hoy es 2026-07-01 — Windsor.ai solo trae datos reales hasta el día de hoy. Este dashboard refleja únicamente 2026-06-30 y 2026-07-01, los únicos días con datos disponibles dentro del rango. Vuelve a correr el dashboard más adelante para completar el resto del mes.
+</div>
+
+<div class="tabs">
+  <button class="tab-btn active" data-tab="rlv">Relevancia</button>
+  <button class="tab-btn" data-tab="adq">Adquisición</button>
+  <button class="tab-btn" data-tab="sales">Venta</button>
+</div>
+
+<div id="tab-rlv">
+  <div class="kpi-grid" id="kpi-rlv"></div>
+
+  <div class="filters">
+    <label>País
+      <select id="f-country">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Campaña
+      <select id="f-campaign">
+        <option value="">Todas</option>
+      </select>
+    </label>
+    <label>Ad set
+      <select id="f-adset">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Ad
+      <select id="f-ad">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Temperatura
+      <select id="f-temp">
+        <option value="">Todas</option>
+      </select>
+    </label>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>País</th>
+          <th>Campaña</th>
+          <th>Ad set</th>
+          <th>Ad</th>
+          <th>Temperatura</th>
+          <th>Gasto (COP)</th>
+          <th>Impresiones</th>
+          <th>CTR</th>
+          <th>Frecuencia</th>
+          <th>Visitas IG</th>
+          <th>Costo/Visita</th>
+          <th>ThruPlay</th>
+          <th>Costo/ThruPlay</th>
+          <th>VTR 50%</th>
+          <th>VTR 75%</th>
+          <th>VTR 95%</th>
+        </tr>
+      </thead>
+      <tbody id="rlv-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="tab-adq" style="display:none">
+  <div class="empty-state">No hay campañas de Adquisición (token <code>-adq-</code>) que matcheen producto <code>-launch-</code> y fecha de proyecto <code>-ago26-</code> en el rango consultado.</div>
+</div>
+
+<div id="tab-sales" style="display:none">
+  <div class="empty-state">No hay campañas de Venta (token <code>sales</code>) que matcheen producto <code>-launch-</code> y fecha de proyecto <code>-ago26-</code> en el rango consultado.</div>
+</div>
+
+<script>
+const RLV_DATA = [
+  {country:"Colombia", countryCode:"co", campaign:"cpa-launch-rlv-cold-ig-ago26-co-abo", adset:"lal-1purchases-co-ad1-atr-May26", ad:"ad1-atr-May26", temp:"Lookalike", spend:7058, impressions:545, clicks:8, ctr:1.47, freq:1.0267, igVisits:6, costPerIg:1176.33, thruplay:29, costPerThruplay:243.38, vtr50:2.20, vtr75:1.28, vtr95:0.73},
+  {country:"Colombia", countryCode:"co", campaign:"cpa-launch-rlv-cold-ig-ago26-co-abo", adset:"lal-1purchases-co-ad16-atr-may26", ad:"ad16-atr-Jan26", temp:"Lookalike", spend:16160, impressions:1138, clicks:32, ctr:2.81, freq:1.0723, igVisits:26, costPerIg:621.54, thruplay:57, costPerThruplay:283.51, vtr50:3.69, vtr75:3.25, vtr95:2.46},
+  {country:"Colombia", countryCode:"co", campaign:"cpa-launch-rlv-cold-ig-ago26-co-abo", adset:"lal-1purchases-co-ad1-atr-dic26", ad:"ad1-atr-dic25", temp:"Lookalike", spend:27787, impressions:1480, clicks:36, ctr:2.43, freq:1.0489, igVisits:28, costPerIg:992.39, thruplay:245, costPerThruplay:113.42, vtr50:12.23, vtr75:9.86, vtr95:7.09},
+  {country:"Colombia", countryCode:"co", campaign:"cpa-launch-rlv-cold-ig-ago26-co-abo", adset:"lal-1purchases-co-ad1-atr-ago26", ad:"ad1-atr-ago26", temp:"Lookalike", spend:7639, impressions:633, clicks:16, ctr:2.53, freq:1.0311, igVisits:14, costPerIg:545.64, thruplay:72, costPerThruplay:106.10, vtr50:9.48, vtr75:7.27, vtr95:4.90},
+
+  {country:"Estados Unidos", countryCode:"usa", campaign:"cpa-launch-rlv-cold-ig-ago26-usa-abo", adset:"lal-1purchases-usa-ad1-atr-ago26", ad:"ad1-atr-ago26", temp:"Lookalike", spend:5462, impressions:99, clicks:5, ctr:5.05, freq:1.0207, igVisits:4, costPerIg:1365.50, thruplay:18, costPerThruplay:303.44, vtr50:14.14, vtr75:12.12, vtr95:11.11},
+  {country:"Estados Unidos", countryCode:"usa", campaign:"cpa-launch-rlv-cold-ig-ago26-usa-abo", adset:"lal-1purchases-usa-ad1-atr-dic26", ad:"ad1-atr-dic25", temp:"Lookalike", spend:10361, impressions:144, clicks:7, ctr:4.86, freq:1.0364, igVisits:3, costPerIg:3453.67, thruplay:32, costPerThruplay:323.78, vtr50:14.58, vtr75:11.81, vtr95:7.64},
+  {country:"Estados Unidos", countryCode:"usa", campaign:"cpa-launch-rlv-cold-ig-ago26-usa-abo", adset:"lal-1purchases-usa-ad1-atr-May26", ad:"ad1-atr-May26", temp:"Lookalike", spend:5445, impressions:94, clicks:6, ctr:6.38, freq:1.0454, igVisits:4, costPerIg:1361.25, thruplay:11, costPerThruplay:495.00, vtr50:8.51, vtr75:6.38, vtr95:4.26},
+  {country:"Estados Unidos", countryCode:"usa", campaign:"cpa-launch-rlv-cold-ig-ago26-usa-abo", adset:"lal-1purchases-usa-ad16-atr-may26", ad:"ad16-atr-Jan26", temp:"Lookalike", spend:1916, impressions:23, clicks:2, ctr:8.70, freq:1.0952, igVisits:1, costPerIg:1916.00, thruplay:2, costPerThruplay:958.00, vtr50:8.70, vtr75:8.70, vtr95:8.70},
+
+  {country:"México", countryCode:"mx", campaign:"cpa-launch-rlv-cold-ig-ago26-mx-abo", adset:"lal-1purchases-mx-ad1-atr-ago26", ad:"ad1-atr-ago26", temp:"Lookalike", spend:3442, impressions:198, clicks:7, ctr:3.54, freq:1.1063, igVisits:6, costPerIg:573.67, thruplay:29, costPerThruplay:118.69, vtr50:12.63, vtr75:9.09, vtr95:6.06},
+  {country:"México", countryCode:"mx", campaign:"cpa-launch-rlv-cold-ig-ago26-mx-abo", adset:"lal-1purchases-mx-ad1-atr-dic26", ad:"ad1-atr-dic25", temp:"Lookalike", spend:3957, impressions:172, clicks:16, ctr:9.30, freq:1.0563, igVisits:5, costPerIg:791.40, thruplay:35, costPerThruplay:113.06, vtr50:16.86, vtr75:12.21, vtr95:9.88},
+  {country:"México", countryCode:"mx", campaign:"cpa-launch-rlv-cold-ig-ago26-mx-abo", adset:"lal-1purchases-mx-ad16-atr-may26", ad:"ad16-atr-Jan26", temp:"Lookalike", spend:4032, impressions:222, clicks:14, ctr:6.31, freq:1.1157, igVisits:6, costPerIg:672.00, thruplay:21, costPerThruplay:192.00, vtr50:7.66, vtr75:6.76, vtr95:5.86},
+  {country:"México", countryCode:"mx", campaign:"cpa-launch-rlv-cold-ig-ago26-mx-abo", adset:"lal-1purchases-mx-ad1-atr-May26", ad:"ad1-atr-May26", temp:"Lookalike", spend:3442, impressions:142, clicks:9, ctr:6.34, freq:1.0770, igVisits:4, costPerIg:860.50, thruplay:17, costPerThruplay:202.47, vtr50:6.34, vtr75:4.23, vtr95:1.41}
+];
+
+function fmtCOP(n) {
+  return "$" + Math.round(n).toLocaleString("es-CO");
+}
+function fmtPct(n) {
+  return n.toFixed(2) + "%";
+}
+function fmtNum(n) {
+  return Math.round(n).toLocaleString("es-CO");
+}
+
+document.getElementById("gen-time").textContent = new Date().toLocaleString("es-CO", { dateStyle: "long", timeStyle: "short" });
+
+function uniqueSorted(arr, key) {
+  return [...new Set(arr.map(r => r[key]))].sort();
+}
+
+function populateSelect(id, values) {
+  const sel = document.getElementById(id);
+  values.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v;
+    sel.appendChild(opt);
+  });
+}
+
+populateSelect("f-country", uniqueSorted(RLV_DATA, "country"));
+populateSelect("f-campaign", uniqueSorted(RLV_DATA, "campaign"));
+populateSelect("f-adset", uniqueSorted(RLV_DATA, "adset"));
+populateSelect("f-ad", uniqueSorted(RLV_DATA, "ad"));
+populateSelect("f-temp", uniqueSorted(RLV_DATA, "temp"));
+
+function computeKpis(rows) {
+  const spend = rows.reduce((s, r) => s + r.spend, 0);
+  const impressions = rows.reduce((s, r) => s + r.impressions, 0);
+  const clicks = rows.reduce((s, r) => s + r.clicks, 0);
+  const igVisits = rows.reduce((s, r) => s + r.igVisits, 0);
+  const thruplay = rows.reduce((s, r) => s + r.thruplay, 0);
+  const freqWeighted = impressions ? rows.reduce((s, r) => s + r.freq * r.impressions, 0) / impressions : 0;
+  const ctr = impressions ? (clicks / impressions) * 100 : 0;
+  const cpm = impressions ? (spend / impressions) * 1000 : 0;
+  const costPerIg = igVisits ? spend / igVisits : 0;
+  const costPerThruplay = thruplay ? spend / thruplay : 0;
+  return { spend, impressions, clicks, igVisits, thruplay, freqWeighted, ctr, cpm, costPerIg, costPerThruplay };
+}
+
+function renderKpis(k) {
+  const el = document.getElementById("kpi-rlv");
+  el.innerHTML = `
+    <div class="kpi-card"><div class="label">Gasto total</div><div class="value">${fmtCOP(k.spend)}</div></div>
+    <div class="kpi-card"><div class="label">Impresiones</div><div class="value">${fmtNum(k.impressions)}</div></div>
+    <div class="kpi-card"><div class="label">CTR promedio</div><div class="value">${fmtPct(k.ctr)}</div></div>
+    <div class="kpi-card"><div class="label">CPM promedio</div><div class="value">${fmtCOP(k.cpm)}</div></div>
+    <div class="kpi-card"><div class="label">Frecuencia</div><div class="value">${k.freqWeighted.toFixed(2)}</div></div>
+    <div class="kpi-card"><div class="label">Visitas a IG</div><div class="value">${fmtNum(k.igVisits)}</div></div>
+    <div class="kpi-card"><div class="label">Costo/Visita IG</div><div class="value">${fmtCOP(k.costPerIg)}</div></div>
+    <div class="kpi-card"><div class="label">ThruPlays</div><div class="value">${fmtNum(k.thruplay)}</div></div>
+    <div class="kpi-card"><div class="label">Costo/ThruPlay</div><div class="value">${fmtCOP(k.costPerThruplay)}</div></div>
+  `;
+}
+
+function renderTable(rows) {
+  const body = document.getElementById("rlv-body");
+  body.innerHTML = rows.map(r => `
+    <tr>
+      <td><span class="country-pill">${r.country}</span></td>
+      <td>${r.campaign}</td>
+      <td>${r.adset}</td>
+      <td>${r.ad}</td>
+      <td>${r.temp}</td>
+      <td>${fmtCOP(r.spend)}</td>
+      <td>${fmtNum(r.impressions)}</td>
+      <td>${fmtPct(r.ctr)}</td>
+      <td>${r.freq.toFixed(2)}</td>
+      <td>${fmtNum(r.igVisits)}</td>
+      <td>${fmtCOP(r.costPerIg)}</td>
+      <td>${fmtNum(r.thruplay)}</td>
+      <td>${fmtCOP(r.costPerThruplay)}</td>
+      <td>${fmtPct(r.vtr50)}</td>
+      <td>${fmtPct(r.vtr75)}</td>
+      <td>${fmtPct(r.vtr95)}</td>
+    </tr>
+  `).join("");
+}
+
+function applyFilters() {
+  const country = document.getElementById("f-country").value;
+  const campaign = document.getElementById("f-campaign").value;
+  const adset = document.getElementById("f-adset").value;
+  const ad = document.getElementById("f-ad").value;
+  const temp = document.getElementById("f-temp").value;
+
+  const filtered = RLV_DATA.filter(r =>
+    (!country || r.country === country) &&
+    (!campaign || r.campaign === campaign) &&
+    (!adset || r.adset === adset) &&
+    (!ad || r.ad === ad) &&
+    (!temp || r.temp === temp)
+  );
+
+  renderKpis(computeKpis(filtered));
+  renderTable(filtered);
+}
+
+["f-country", "f-campaign", "f-adset", "f-ad", "f-temp"].forEach(id => {
+  document.getElementById(id).addEventListener("change", applyFilters);
+});
+
+applyFilters();
+
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    ["rlv", "adq", "sales"].forEach(t => {
+      document.getElementById("tab-" + t).style.display = (t === btn.dataset.tab) ? "block" : "none";
+    });
+  });
+});
+</script>
+
+</body>
+</html>
