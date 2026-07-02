@@ -169,7 +169,7 @@
 </head>
 <body>
 
-<header>
+<header style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 16px;">
   <div>
     <h1>Ingresarios — Dashboard de Tráfico Pago</h1>
     <div class="meta">
@@ -177,8 +177,25 @@
       <span class="badge">Producto: launch</span>
       <span class="badge">Proyecto: jul26</span><br>
       Rango solicitado: 2026-06-01 a 2026-07-03 · Moneda: COP<br>
-      Generado: <span>2 de julio de 2026, 4:38 a. m.</span> · Fuente: Windsor.ai (Meta & Google Ads)
+      Generado: <span>2 de julio de 2026, 4:44 a. m.</span> · Fuente: Windsor.ai (Meta & Google Ads)
     </div>
+  </div>
+  <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+    <button id="btn-sync-now" style="
+      background: linear-gradient(90deg, var(--purple-light), var(--purple-dark));
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: opacity 0.2s;
+    ">🔄 Sincronizar en Vivo</button>
+    <span id="sync-status" style="font-size: 12px; color: var(--text-muted); text-align: right; max-width: 300px;"></span>
   </div>
 </header>
 
@@ -562,6 +579,54 @@ document.querySelectorAll(".tab-btn").forEach(btn => {
 renderRlv();
 renderAdq();
 renderSales();
+
+// Live Sync Action
+document.getElementById("btn-sync-now").addEventListener("click", async () => {
+  const btn = document.getElementById("btn-sync-now");
+  const status = document.getElementById("sync-status");
+  btn.disabled = true;
+  status.innerHTML = "Sincronizando datos con Windsor.ai...";
+  
+  // Check if the current page is local file
+  const isLocal = window.location.protocol === "file:";
+  
+  try {
+    const res = await fetch("https://tfwvvsvoimgnwjodfwlh.supabase.co/functions/v1/sync-dashboard", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": "sb_publishable_SoMA-kofg1GYOAQRTvnEIQ_1T0c4SkN",
+        "Authorization": "Bearer sb_publishable_SoMA-kofg1GYOAQRTvnEIQ_1T0c4SkN"
+      },
+      body: JSON.stringify({
+        client: "ingresarios",
+        product: "launch",
+        project_date: "jul26",
+        start_date: "2026-06-01",
+        end_date: "2026-07-03",
+        currency: "COP"
+      })
+    });
+    
+    const data = await res.json();
+    if (data.success) {
+      if (isLocal) {
+        status.innerHTML = "¡Actualizado! Ejecuta <code>python3 sync.py</code> para descargar el archivo.";
+      } else {
+        status.innerHTML = "¡Dashboard actualizado! Recargando...";
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } else {
+      status.innerHTML = "Error: " + (data.error || "Fallo en sincronización.");
+      btn.disabled = false;
+    }
+  } catch (err) {
+    status.innerHTML = "Error de red al conectar con Supabase.";
+    btn.disabled = false;
+  }
+});
 </script>
 
 </body>
